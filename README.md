@@ -5,15 +5,65 @@ nrf52 chip from Nordic Semiconductor. It works for both iOS and Android.
 
 For more info about the DFU process, see: [Resources](#resources)
 
-## Getting started
+## Installation
 
-`$ yarn add react-native-nordic-dfu`
+Install and link the NPM package per usual with
 
-### Mostly automatic installation
+```bash
+npm install --save react-native-nordic-dfu
+react-native link react-native-nordic-dfu
+```
 
-`$ react-native link react-native-nordic-dfu`
+### Minimum requirements
 
-**NOTE FOR iOS**: After linking the library you must perform step **4-10** of the Manual installation for iOS below.
+This project has been verified to work with the following dependencies, though other versions may work as well.
+
+| Dependency | Version |
+|-|-|
+| React Native | 0.59.4 |  
+| XCode | 10.2 |
+| Swift | 5.0 |
+| CocoaPods | 1.6.1 |
+| Gradle | 5.3.1 |
+
+### iOS
+
+The iOS version of this library has native dependencies that need to be installed via `CocoaPods`, which is currently the only supported method for installing this library. (PR's for alternative installation methods are welcome!)
+
+Previous versions supported manual linking, but this was prone to errors every time a new version of XCode and/or Swift was released, which is why this support was dropped. If you've previously installed this library manually, you'll want to remove the old installation and replace it with CocoaPods.
+
+#### CocoaPods
+
+Add the following to your `Podfile`
+
+```ruby
+target "YourApp" do
+  ...
+  
+  use_frameworks!
+  pod "react-native-nordic-dfu", path: "../node_modules/react-native-nordic-dfu"
+
+  ...
+end
+```
+
+and in the same folder as the Podfile run
+
+```bash
+pod install
+```
+
+Since there's native Swift dependencies you need to set which Swift version your project complies with. If you haven't already done this, open up your project with XCode and add a User-Defined setting under Build Settings: `SWIFT_VERSION = <your-swift-version>`.
+
+#### Bluetooth integration
+
+This library needs access to an instance of `CBCentralManager`, which you most likely will have instantiated already if you're using Bluetooth for other purposes than DFU in your project.
+
+To integrate with your existing Bluetooth setup, call `[RNNordicDfu setCentralManagerGetter:<...>]` with a block argument that returns your `CBCentralManager` instance.
+
+If you want control over the `CBCentralManager` instance after the DFU process is done you might need to provide the `onDFUComplete` and `onDFUError` callbacks to transfer back delegate control.
+
+The example project shows how this may be done.
 
 ## API
 
@@ -34,7 +84,7 @@ done in React Native.
     -   `obj.deviceAddress` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** The `identifier`\* of the device that should be updated
     -   `obj.deviceName` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** The name of the device in the update notification (optional, default `null`)
     -   `obj.filePath` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** The file system path to the zip-file used for updating
-    
+
 \* `identifier` — MAC address (Android) / UUID (iOS)
 
 **Examples**
@@ -71,9 +121,9 @@ DFUEmitter.addListener("DFUStateChanged", ({state}) => {
 })
 ```
 
-## Full Example
+## Example project
 
-See: [example/index.js](example/index.android.js)
+Navigate to `example/` and run
 
 ## Manual installation
 
@@ -95,20 +145,19 @@ See: [example/index.js](example/index.android.js)
 
 1.  Open up `android/app/src/main/java/[...]/MainActivity.java`
 
--   Add `import com.pilloxa.RNNordicDfuPackage;` to the imports at the top of the file
--   Add `new RNNordicDfuPackage()` to the list returned by the `getPackages()` method
+Run the iOS project with
 
-2.  Append the following lines to `android/settings.gradle`:
-        include ':react-native-nordic-dfu'
-        project(':react-native-nordic-dfu').projectDir = new File(rootProject.projectDir, 	'../node_modules/react-native-nordic-dfu/android')
-3.  Insert the following lines inside the dependencies block in `android/app/build.gradle`:
-          compile project(':react-native-nordic-dfu')
+```bash
+react-native run-ios
+```
 
-## Development and contribution
+and the Android project with
 
-### iOS
+```bash
+react-native run-android
+```
 
-This package contains pre-built frameworks for Nordic's native DFU library. To upgrade to the latest version of this library:
+## Development
 
 1.  Update library version in `ios/Cartfile`
 2.  Navigate to `ios/`
